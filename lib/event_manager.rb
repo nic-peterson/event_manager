@@ -1,14 +1,32 @@
-puts 'Event Manager Initialized!'
+require 'csv'
+require 'google/apis/civicinfo_v2'
 
-if (File.exist? "event_attendees.csv")
-  # contents = File.read('event_attendees.csv')
-  # puts contents
-  lines = File.readlines("event_attendees.csv")
-  lines.each do |line|
-    columns = line.split(",")
-    name = columns[2]
-    puts name
-  end
-else
-  puts "File DNE!"
+civic_info = Google::Apis::CivicinfoV2::CivicInfoService.new
+civic_info.key = 'AIzaSyClRzDqDh5MsXwnCWi0kOiiBivP6JsSyBw'
+
+def clean_zipcode(zipcode)
+  zipcode.to_s.rjust(5, '0')[0..4]
+end
+
+puts 'EventManager initialized.'
+
+contents = CSV.open(
+  'event_attendees.csv',
+  headers: true,
+  header_converters: :symbol
+)
+
+contents.each do |row|
+  name = row[:first_name]
+
+  zipcode = clean_zipcode(row[:zipcode])
+
+  legislators = civic_info.representative_info_by_address(
+    address: zipcode,
+    levels: 'country',
+    roles: ['legislatorUpperBody', 'legislatorLowerBody']
+  )
+  legislators = legislators.officials
+
+  puts "#{name} #{zipcode} #{legislators}"
 end
