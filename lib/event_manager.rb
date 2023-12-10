@@ -34,12 +34,9 @@ def send_thank_you_letter(id, form_letter)
 end
 
 def clean_phone_number(phone_number)
-  # phone = phone_number
   stripped_phone_number = phone_number.gsub(/[-.() ]/, '')
-  # puts phone
-  # puts phone.class
   length = stripped_phone_number.length
-  # puts length
+
   case length
   when 0...10
     stripped_phone_number = BAD_PHONE_NUMBER
@@ -69,11 +66,10 @@ erb_template = ERB.new template_letter
 contents.each do |row|
   id = row[0]
   name = row[:first_name]
-  # print row[:email_address]
-  # puts row[:homephone]
+
   phone_number = clean_phone_number(row[:homephone])
   puts phone_number
-  # puts phone_number
+
   zipcode = clean_zipcode(row[:zipcode])
   legislators = legislators_by_zipcode(zipcode)
 
