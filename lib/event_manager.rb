@@ -90,15 +90,12 @@ contents.each do |row|
   name = row[:first_name]
 
   phone_number = clean_phone_number(row[:homephone])
-  # peak_hours = identify_peak_hours(row[:regdate])
   registration_date = Time.strptime(row[:regdate], "%m/%d/%y %H:%M")
-  # registration_date = Time.parse(row[:regdate])
   hour = registration_date.hour
   registration_hours[hour] += 1
 
   day = registration_date.wday
   registration_days[day] += 1
-  # put peak_hours
 
   zipcode = clean_zipcode(row[:zipcode])
   legislators = legislators_by_zipcode(zipcode)
