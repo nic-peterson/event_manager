@@ -1,6 +1,7 @@
 require 'csv'
 require 'google/apis/civicinfo_v2'
 require 'erb'
+require 'time'
 
 BAD_PHONE_NUMBER = "0000000000"
 
@@ -52,6 +53,11 @@ def clean_phone_number(phone_number)
   return stripped_phone_number
 end
 
+def identify_peak_hours(registration_hours)
+  peak_hour = registration_hours.max_by { |_hour, count| count }
+  peak_hour[0] # Return only the hour, not the count
+end
+
 puts 'EventManager initialized.'
 
 contents = CSV.open(
@@ -62,13 +68,21 @@ contents = CSV.open(
 
 template_letter = File.read('form_letter.erb')
 erb_template = ERB.new template_letter
+registration_hours = Hash.new(0)
+registration_days = Hash.new(0)
 
 contents.each do |row|
   id = row[0]
   name = row[:first_name]
 
   phone_number = clean_phone_number(row[:homephone])
-  puts phone_number
+  # peak_hours = identify_peak_hours(row[:regdate])
+  registration_date = Time.strptime(row[:regdate], "%m/%d/%y %H:%M")
+  # registration_date = Time.parse(row[:regdate])
+  hour = registration_date.hour
+  registration_hours[hour] += 1
+
+  # put peak_hours
 
   zipcode = clean_zipcode(row[:zipcode])
   legislators = legislators_by_zipcode(zipcode)
@@ -77,3 +91,5 @@ contents.each do |row|
 
   send_thank_you_letter(id, form_letter)
 end
+
+puts "The peak registration hour begins at: #{identify_peak_hours(registration_hours)}:00"
