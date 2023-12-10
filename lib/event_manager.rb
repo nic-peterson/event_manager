@@ -2,6 +2,8 @@ require 'csv'
 require 'google/apis/civicinfo_v2'
 require 'erb'
 
+BAD_PHONE_NUMBER = "0000000000"
+
 def clean_zipcode(zipcode)
   zipcode.to_s.rjust(5, '0')[0..4]
 end
@@ -31,6 +33,28 @@ def send_thank_you_letter(id, form_letter)
   end
 end
 
+def clean_phone_number(phone_number)
+  # phone = phone_number
+  stripped_phone_number = phone_number.gsub(/[-.() ]/, '')
+  # puts phone
+  # puts phone.class
+  length = stripped_phone_number.length
+  # puts length
+  case length
+  when 0...10
+    stripped_phone_number = BAD_PHONE_NUMBER
+  when 10
+    stripped_phone_number
+  else
+    if (stripped_phone_number[0] = "1")
+      stripped_phone_number = stripped_phone_number[1..-1]
+    else
+      stripped_phone_number = BAD_PHONE_NUMBER
+    end
+  end
+  return stripped_phone_number
+end
+
 puts 'EventManager initialized.'
 
 contents = CSV.open(
@@ -45,6 +69,11 @@ erb_template = ERB.new template_letter
 contents.each do |row|
   id = row[0]
   name = row[:first_name]
+  # print row[:email_address]
+  # puts row[:homephone]
+  phone_number = clean_phone_number(row[:homephone])
+  puts phone_number
+  # puts phone_number
   zipcode = clean_zipcode(row[:zipcode])
   legislators = legislators_by_zipcode(zipcode)
 
