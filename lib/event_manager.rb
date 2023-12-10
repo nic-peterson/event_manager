@@ -4,6 +4,15 @@ require 'erb'
 require 'time'
 
 BAD_PHONE_NUMBER = "0000000000"
+DAYS_OF_THE_WEEK_HASH = {
+  0 => "Sunday",
+  1 => "Monday",
+  2 => "Tuesday",
+  3 => "Wednesday",
+  4 => "Thursday",
+  5 => "Friday",
+  6 => "Saturday"
+}
 
 def clean_zipcode(zipcode)
   zipcode.to_s.rjust(5, '0')[0..4]
@@ -58,6 +67,11 @@ def identify_peak_hours(registration_hours)
   peak_hour[0] # Return only the hour, not the count
 end
 
+def identify_peak_day(registration_days)
+  peak_day = registration_days.max_by { |_day, count| count }
+  DAYS_OF_THE_WEEK_HASH[peak_day[0]]
+end
+
 puts 'EventManager initialized.'
 
 contents = CSV.open(
@@ -82,6 +96,8 @@ contents.each do |row|
   hour = registration_date.hour
   registration_hours[hour] += 1
 
+  day = registration_date.wday
+  registration_days[day] += 1
   # put peak_hours
 
   zipcode = clean_zipcode(row[:zipcode])
@@ -93,3 +109,4 @@ contents.each do |row|
 end
 
 puts "The peak registration hour begins at: #{identify_peak_hours(registration_hours)}:00"
+puts "The peak registration day is: #{identify_peak_day(registration_days)}"
